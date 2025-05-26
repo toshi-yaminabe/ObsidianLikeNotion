@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "Notion Page Tweaks",
+  "version": "0.1",
+  "permissions": [
+    "identity",
+    "activeTab",
+    "scripting",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://www.notion.so/*",
+    "https://api.notion.com/*"
+  ],
+  "background": { "service_worker": "background.js" },
+  "content_scripts": [{
+    "matches": ["https://www.notion.so/*"],
+    "js": ["content.js"]
+  }],
+  "action": { "default_popup": "popup.html" }
+  ,
+  "options_ui": {
+    "page": "register.html",
+    "open_in_tab": true
+  }
+}
