@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Notion Tools</title>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('toggle').addEventListener('click', async () => {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const url = new URL(tab.url);
+    const pageId = url.pathname.replace(/\W/g, '');
+    chrome.runtime.sendMessage({ cmd: 'toggle', pageId, level: 2 });
+  });
+});
+</script>
+</head>
+<body>
+<button id="toggle">Convert headings</button>
+</body>
+</html>
