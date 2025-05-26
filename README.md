@@ -1,5 +1,24 @@
 # ObsidianLikeNotion
+このリポジトリは Notion を Obsidian のように使う実験的なプロジェクトです。
 
+## 使い方
+
+1. このページの右上にある **Code** ボタンから「**Download ZIP**」を選んで、ファイルを自分のパソコンに保存します。
+2. ダウンロードした ZIP ファイルを解凍します。
+3. Google Chrome を開き、右上のメニューから「拡張機能」を開きます。
+4. 右上の「デベロッパーモード」をオンにし、「パッケージ化されていない拡張機能を読み込む」をクリックして、先ほど解凍したフォルダを選びます。
+5. Notion を開き、ブラウザの詳細設定から `token_v2` という文字列を探してコピーし、拡張機能のフォルダにある `token.txt` に貼り付けます。
+
+これで準備は完了です。
+
+## 主な機能
+
+- Notion のページをすばやく開いたり作ったりできます。
+- Obsidian のような感覚でメモを編集できます。
+
+※ このプロジェクトはまだ実験段階のため、予期しない動きをすることがあります。
+
+=======
 
 このリポジトリはNotionをObsidianのように使う実験的なプロジェクトです。
 
@@ -25,3 +44,4 @@ This repository contains a minimal Chrome extension prototype that manipulates N
 The extension uses the Notion API and requires an integration token stored via `chrome.storage.local` under the key `token`.
 
 Place your extension files under the `extension/` directory in this repository.
+
