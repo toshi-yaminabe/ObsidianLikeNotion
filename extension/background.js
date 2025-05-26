@@ -45,7 +45,7 @@ async function convertToToggle(pageId, level = 2) {
         const childRes = await fetch(`https://api.notion.com/v1/blocks/${block.id}/children?page_size=100`, { headers });
         const childData = await childRes.json();
         for (const child of childData.results) {
-          await fetch(`https://api.notion.com/v1/blocks/${child.id}/parent`, {
+          await fetch(`https://api.notion.com/v1/blocks/${child.id}`, {
             method: 'PATCH',
             headers,
             body: JSON.stringify({ parent: { block_id: createData.results[0].id } })
