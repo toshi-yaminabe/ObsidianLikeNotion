@@ -18,4 +18,9 @@
     "js": ["content.js"]
   }],
   "action": { "default_popup": "popup.html" }
+  ,
+  "options_ui": {
+    "page": "register.html",
+    "open_in_tab": true
+  }
 }
