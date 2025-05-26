@@ -11,10 +11,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const pageId = url.pathname.replace(/\W/g, '');
     chrome.runtime.sendMessage({ cmd: 'toggle', pageId, level: 2 });
   });
+
+  document.getElementById('register').addEventListener('click', () => {
+    chrome.tabs.create({ url: chrome.runtime.getURL('register.html') });
+  });
 });
 </script>
 </head>
 <body>
 <button id="toggle">Convert headings</button>
+<button id="register">Setup Integration</button>
 </body>
 </html>
