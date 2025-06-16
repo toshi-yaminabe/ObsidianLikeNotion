@@ -1,6 +1,6 @@
 function extractPageId(urlString) {
-  const url = new URL(urlString);
-  return url.pathname.replace(/\W/g, '');
+  const match = urlString.replace(/-/g, '').match(/[0-9a-f]{32}/i);
+  return match ? match[0] : '';
 }
 
 if (typeof module !== 'undefined') {
