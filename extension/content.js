@@ -1,4 +1,7 @@
-document.addEventListener('mouseup', async () => {
+// Trigger page creation and link insertion when Alt+L is pressed
+// after selecting text in a Notion block
+document.addEventListener('keydown', async e => {
+  if (!(e.altKey && e.key.toLowerCase() === 'l')) return;
   const sel = window.getSelection();
   const text = sel.toString().trim();
   if (!text) return;

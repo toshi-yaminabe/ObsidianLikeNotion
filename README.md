@@ -13,6 +13,7 @@ This repository provides a prototype extension that manipulates Notion pages.
 - Notionページを素早く開いたり作成できます。
 - 見出しブロックを同レベルのトグル見出しに変換します。
 - 選択したテキストをタイトルとするページを作成し、選択部分をそのページへのリンクに置き換えます。
+  選択後に **Alt+L** を押すとリンク化が実行されます。
 
 拡張機能はNotion APIを利用し、`chrome.storage.local` に `token` として統合トークン、`database` としてデータベースIDを保存しておく必要があります。
 `extension/` ディレクトリにすべてのファイルが含まれています。
