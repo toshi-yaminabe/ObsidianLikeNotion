@@ -25,8 +25,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('toggle').addEventListener('click', async () => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    const url = new URL(tab.url);
-    const pageId = url.pathname.replace(/\W/g, '');
+    const match = tab.url.match(/[0-9a-f]{32}/);
+    if (!match) {
+      msg.textContent = 'Invalid page URL';
+      setTimeout(() => { msg.textContent = ''; }, 1500);
+      return;
+    }
+    const pageId = match[0];
     chrome.runtime.sendMessage({ cmd: 'toggle', pageId, level: 2 });
   });
 
