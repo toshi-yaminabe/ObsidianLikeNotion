@@ -20,6 +20,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const res = await chrome.runtime.sendMessage({ cmd: 'createNewPage', title });
     if (res && res.url) {
       chrome.tabs.create({ url: res.url });
+    } else {
+      msg.textContent = 'Failed to create page';
+      setTimeout(() => { msg.textContent = ''; }, 1500);
     }
   });
 
