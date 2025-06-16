@@ -36,15 +36,23 @@ async function convertToToggle(pageId, level = 2) {
   // Retrieve child blocks
   const res = await fetch(`https://api.notion.com/v1/blocks/${pageId}/children?page_size=100`,
     { headers });
+  if (!res.ok) {
+    console.error('Failed to retrieve blocks', await res.text());
+    return;
+  }
   const data = await res.json();
   for (const block of data.results) {
     if (block.type.startsWith('heading')) {
       // Archive old heading
-      await fetch(`https://api.notion.com/v1/blocks/${block.id}`, {
+      const archiveRes = await fetch(`https://api.notion.com/v1/blocks/${block.id}`, {
         method: 'PATCH',
         headers,
         body: JSON.stringify({ archived: true })
       });
+      if (!archiveRes.ok) {
+        console.error('Failed to archive heading', block.id, await archiveRes.text());
+        return;
+      }
       // Create toggle heading with same text
       const createRes = await fetch(`https://api.notion.com/v1/blocks/${pageId}/children`, {
         method: 'PATCH',
@@ -59,16 +67,28 @@ async function convertToToggle(pageId, level = 2) {
           }]
         })
       });
+      if (!createRes.ok) {
+        console.error('Failed to create toggle heading', block.id, await createRes.text());
+        return;
+      }
       const createData = await createRes.json();
       if (block.has_children) {
         const childRes = await fetch(`https://api.notion.com/v1/blocks/${block.id}/children?page_size=100`, { headers });
+        if (!childRes.ok) {
+          console.error('Failed to retrieve child blocks', block.id, await childRes.text());
+          return;
+        }
         const childData = await childRes.json();
         for (const child of childData.results) {
-          await fetch(`https://api.notion.com/v1/blocks/${child.id}`, {
+          const moveRes = await fetch(`https://api.notion.com/v1/blocks/${child.id}`, {
             method: 'PATCH',
             headers,
             body: JSON.stringify({ parent: { block_id: createData.results[0].id } })
           });
+          if (!moveRes.ok) {
+            console.error('Failed to move child block', child.id, await moveRes.text());
+            return;
+          }
           await new Promise(r => setTimeout(r, 400));
         }
       }
