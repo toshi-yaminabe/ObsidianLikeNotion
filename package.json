@@ -1,0 +1,11 @@
+{
+  "name": "obsidian-like-notion",
+  "version": "0.1.0",
+  "description": "Utilities for the Notion page tweaking extension",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.6.0"
+  }
+}

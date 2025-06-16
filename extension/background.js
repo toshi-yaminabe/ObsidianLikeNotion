@@ -1,23 +1,25 @@
 const NOTION_VERSION = '2022-06-28';
 
 // Load token from token.txt on first run
-(async () => {
-  const data = await chrome.storage.local.get('token');
-  if (!data.token) {
-    try {
-      const url = chrome.runtime.getURL('token.txt');
-      const res = await fetch(url);
-      if (res.ok) {
-        const text = (await res.text()).trim();
-        if (text) {
-          await chrome.storage.local.set({ token: text });
+if (typeof chrome !== 'undefined' && chrome.storage && chrome.runtime) {
+  (async () => {
+    const data = await chrome.storage.local.get('token');
+    if (!data.token) {
+      try {
+        const url = chrome.runtime.getURL('token.txt');
+        const res = await fetch(url);
+        if (res.ok) {
+          const text = (await res.text()).trim();
+          if (text) {
+            await chrome.storage.local.set({ token: text });
+          }
         }
+      } catch (e) {
+        // ignore if file not found
       }
-    } catch (e) {
-      // ignore if file not found
     }
-  }
-})();
+  })();
+}
 
 async function getToken() {
   const data = await chrome.storage.local.get('token');
@@ -199,5 +201,16 @@ async function createPage(title) {
   });
   const page = await pageRes.json();
   return page.url;
+}
+
+// Export for testing in Node environment
+if (typeof module !== 'undefined') {
+  module.exports = {
+    getToken,
+    convertToToggle,
+    convertBlocksToToggle,
+    createLinkedPage,
+    createPage,
+  };
 }
 
