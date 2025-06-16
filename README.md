@@ -12,6 +12,7 @@ This repository provides a prototype extension that manipulates Notion pages.
 ## 主な機能 / Features
 - Notionページを素早く開いたり作成できます。
 - 見出しブロックを同レベルのトグル見出しに変換します。
+- **Convert headings** ボタンを利用する場合、変更したいページを事前にインテグレーションと共有してください。共有されていないページでは変換に失敗します。
 - 選択したテキストをタイトルとするページを作成し、選択部分をそのページへのリンクに置き換えます。
   選択後に **Alt+L** を押すとリンク化が実行されます。
 
