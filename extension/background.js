@@ -77,9 +77,60 @@ async function convertToToggle(pageId, level = 2) {
   }
 }
 
+// Convert specific heading blocks to toggle headings
+async function convertBlocksToToggle(blockIds, level = 2) {
+  const token = await getToken();
+  if (!token) return;
+  const headers = {
+    'Authorization': `Bearer ${token}`,
+    'Notion-Version': NOTION_VERSION,
+    'Content-Type': 'application/json'
+  };
+  for (const id of blockIds) {
+    const res = await fetch(`https://api.notion.com/v1/blocks/${id}`, { headers });
+    const block = await res.json();
+    if (!block.type || !block.type.startsWith('heading')) continue;
+    const parentId = block.parent.block_id || block.parent.page_id;
+    await fetch(`https://api.notion.com/v1/blocks/${block.id}`, {
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify({ archived: true })
+    });
+    const createRes = await fetch(`https://api.notion.com/v1/blocks/${parentId}/children`, {
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify({
+        children: [{
+          object: 'block',
+          type: `toggle_heading_${level}`,
+          [`toggle_heading_${level}`]: {
+            rich_text: block[block.type].rich_text
+          }
+        }]
+      })
+    });
+    const createData = await createRes.json();
+    if (block.has_children) {
+      const childRes = await fetch(`https://api.notion.com/v1/blocks/${block.id}/children?page_size=100`, { headers });
+      const childData = await childRes.json();
+      for (const child of childData.results) {
+        await fetch(`https://api.notion.com/v1/blocks/${child.id}`, {
+          method: 'PATCH',
+          headers,
+          body: JSON.stringify({ parent: { block_id: createData.results[0].id } })
+        });
+        await new Promise(r => setTimeout(r, 400));
+      }
+    }
+    await new Promise(r => setTimeout(r, 400));
+  }
+}
+
 chrome.runtime.onMessage.addListener(async msg => {
   if (msg.cmd === 'toggle') {
     await convertToToggle(msg.pageId, msg.level);
+  } else if (msg.cmd === 'toggleSelection') {
+    await convertBlocksToToggle(msg.blockIds, msg.level);
   } else if (msg.cmd === 'createPage') {
     await createLinkedPage(msg);
   } else if (msg.cmd === 'createNewPage') {

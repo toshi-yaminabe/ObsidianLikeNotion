@@ -21,3 +21,21 @@ document.addEventListener('keydown', async e => {
     end
   });
 });
+
+// Provide selected block IDs when requested by the extension
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg && msg.cmd === 'getSelectedBlockIds') {
+    const sel = window.getSelection();
+    const ids = [];
+    if (sel && sel.rangeCount) {
+      const range = sel.getRangeAt(0);
+      let ancestor = range.commonAncestorContainer;
+      if (ancestor.nodeType !== 1) ancestor = ancestor.parentElement;
+      const elements = ancestor.querySelectorAll('[data-block-id]');
+      elements.forEach(el => {
+        if (range.intersectsNode(el)) ids.push(el.dataset.blockId);
+      });
+    }
+    sendResponse({ blockIds: Array.from(new Set(ids)) });
+  }
+});

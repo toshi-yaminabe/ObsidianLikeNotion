@@ -17,10 +17,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('toggle').addEventListener('click', async () => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    const match = tab.url.replace(/-/g, '').match(/[0-9a-f]{32}/i);
-    if (!match) return;
-    const pageId = match[0];
-    chrome.runtime.sendMessage({ cmd: 'toggle', pageId, level: 2 });
+    if (!tab) return;
+    const res = await chrome.tabs.sendMessage(tab.id, { cmd: 'getSelectedBlockIds' });
+    if (res && Array.isArray(res.blockIds) && res.blockIds.length) {
+      chrome.runtime.sendMessage({ cmd: 'toggleSelection', blockIds: res.blockIds, level: 2 });
+    }
   });
 
   document.getElementById('register').addEventListener('click', () => {
