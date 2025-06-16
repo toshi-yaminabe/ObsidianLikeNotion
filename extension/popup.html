@@ -5,6 +5,30 @@
 <title>Notion Tools</title>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+  const titleInput = document.getElementById('pageTitle');
+  const msg = document.getElementById('status');
+
+  document.getElementById('openPage').addEventListener('click', async () => {
+    const title = titleInput.value.trim();
+    if (!title) return;
+    const res = await chrome.runtime.sendMessage({ cmd: 'openPage', title });
+    if (res && res.url) {
+      chrome.tabs.create({ url: res.url });
+    } else {
+      msg.textContent = 'Page not found';
+      setTimeout(() => { msg.textContent = ''; }, 1500);
+    }
+  });
+
+  document.getElementById('createNewPage').addEventListener('click', async () => {
+    const title = titleInput.value.trim();
+    if (!title) return;
+    const res = await chrome.runtime.sendMessage({ cmd: 'createNewPage', title });
+    if (res && res.url) {
+      chrome.tabs.create({ url: res.url });
+    }
+  });
+
   document.getElementById('toggle').addEventListener('click', async () => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     const url = new URL(tab.url);
@@ -19,7 +43,11 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </head>
 <body>
+<input id="pageTitle" type="text" placeholder="Page title" style="width:100%;" />
+<button id="openPage">Open Page</button>
+<button id="createNewPage">Create Page</button>
 <button id="toggle">Convert headings</button>
 <button id="register">Setup Integration</button>
+<div id="status"></div>
 </body>
 </html>
