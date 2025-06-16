@@ -2,17 +2,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const titleInput = document.getElementById('pageTitle');
   const msg = document.getElementById('status');
 
-  document.getElementById('openPage').addEventListener('click', async () => {
-    const title = titleInput.value.trim();
-    if (!title) return;
-    const res = await chrome.runtime.sendMessage({ cmd: 'openPage', title });
-    if (res && res.url) {
-      chrome.tabs.create({ url: res.url });
-    } else {
-      msg.textContent = 'Page not found';
-      setTimeout(() => { msg.textContent = ''; }, 1500);
-    }
-  });
 
   document.getElementById('createNewPage').addEventListener('click', async () => {
     const title = titleInput.value.trim();

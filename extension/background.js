@@ -82,9 +82,6 @@ chrome.runtime.onMessage.addListener(async msg => {
     await convertToToggle(msg.pageId, msg.level);
   } else if (msg.cmd === 'createPage') {
     await createLinkedPage(msg);
-  } else if (msg.cmd === 'openPage') {
-    const url = await openPage(msg.title);
-    return { url };
   } else if (msg.cmd === 'createNewPage') {
     const url = await createPage(msg.title);
     return { url };
@@ -153,26 +150,3 @@ async function createPage(title) {
   return page.url;
 }
 
-// Search for a page by title and return its URL if found
-async function openPage(title) {
-  const token = await getToken();
-  if (!token) return null;
-  const headers = {
-    'Authorization': `Bearer ${token}`,
-    'Notion-Version': NOTION_VERSION,
-    'Content-Type': 'application/json'
-  };
-  const res = await fetch('https://api.notion.com/v1/search', {
-    method: 'POST',
-    headers,
-    body: JSON.stringify({
-      query: title,
-      filter: { property: 'object', value: 'page' }
-    })
-  });
-  const data = await res.json();
-  if (data.results && data.results.length > 0) {
-    return data.results[0].url;
-  }
-  return null;
-}
