@@ -1,0 +1,11 @@
+{
+  "name": "obsidian-like-notion",
+  "version": "1.0.0",
+  "description": "Prototype Notion helper extension",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.0.0"
+  }
+}

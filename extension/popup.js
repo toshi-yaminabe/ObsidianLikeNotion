@@ -25,8 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('toggle').addEventListener('click', async () => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-    const url = new URL(tab.url);
-    const pageId = url.pathname.replace(/\W/g, '');
+    const pageId = extractPageId(tab.url);
     chrome.runtime.sendMessage({ cmd: 'toggle', pageId, level: 2 });
   });
 

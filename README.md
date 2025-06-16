@@ -19,3 +19,7 @@ This repository provides a prototype extension that manipulates Notion pages.
 `extension/` ディレクトリにすべてのファイルが含まれています。
 
 ※ このプロジェクトは実験段階のため、予期しない動作をすることがあります。
+
+## テスト実行方法 / Running Tests
+1. 依存関係をインストールするため `npm install` を実行します。
+2. `npm test` でユニットテストを実行できます。
