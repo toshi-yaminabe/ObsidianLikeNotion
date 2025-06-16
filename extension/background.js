@@ -1,5 +1,24 @@
 const NOTION_VERSION = '2022-06-28';
 
+// Load token from token.txt on first run
+(async () => {
+  const data = await chrome.storage.local.get('token');
+  if (!data.token) {
+    try {
+      const url = chrome.runtime.getURL('token.txt');
+      const res = await fetch(url);
+      if (res.ok) {
+        const text = (await res.text()).trim();
+        if (text) {
+          await chrome.storage.local.set({ token: text });
+        }
+      }
+    } catch (e) {
+      // ignore if file not found
+    }
+  }
+})();
+
 async function getToken() {
   const data = await chrome.storage.local.get('token');
   return data.token || '';
@@ -63,6 +82,12 @@ chrome.runtime.onMessage.addListener(async msg => {
     await convertToToggle(msg.pageId, msg.level);
   } else if (msg.cmd === 'createPage') {
     await createLinkedPage(msg);
+  } else if (msg.cmd === 'openPage') {
+    const url = await openPage(msg.title);
+    return { url };
+  } else if (msg.cmd === 'createNewPage') {
+    const url = await createPage(msg.title);
+    return { url };
   }
 });
 
@@ -101,4 +126,53 @@ async function createLinkedPage({ title, db, blockId, start, end }) {
     headers,
     body: JSON.stringify({ [block.type]: { rich_text: richText } })
   });
+}
+
+// Create a new page in the configured database and return its URL
+async function createPage(title) {
+  const token = await getToken();
+  if (!token) return null;
+  const data = await chrome.storage.local.get('database');
+  if (!data.database) return null;
+  const headers = {
+    'Authorization': `Bearer ${token}`,
+    'Notion-Version': NOTION_VERSION,
+    'Content-Type': 'application/json'
+  };
+  const pageRes = await fetch('https://api.notion.com/v1/pages', {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      parent: { database_id: data.database },
+      properties: {
+        Name: { title: [{ text: { content: title } }] }
+      }
+    })
+  });
+  const page = await pageRes.json();
+  return page.url;
+}
+
+// Search for a page by title and return its URL if found
+async function openPage(title) {
+  const token = await getToken();
+  if (!token) return null;
+  const headers = {
+    'Authorization': `Bearer ${token}`,
+    'Notion-Version': NOTION_VERSION,
+    'Content-Type': 'application/json'
+  };
+  const res = await fetch('https://api.notion.com/v1/search', {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({
+      query: title,
+      filter: { property: 'object', value: 'page' }
+    })
+  });
+  const data = await res.json();
+  if (data.results && data.results.length > 0) {
+    return data.results[0].url;
+  }
+  return null;
 }
