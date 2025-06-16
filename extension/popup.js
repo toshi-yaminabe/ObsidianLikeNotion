@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (res && res.url) {
       chrome.tabs.create({ url: res.url });
     } else {
-      msg.textContent = 'Failed to create page';
+      msg.textContent = res && res.error ? res.error : 'Failed to create page';
       setTimeout(() => { msg.textContent = ''; }, 1500);
     }
   });
