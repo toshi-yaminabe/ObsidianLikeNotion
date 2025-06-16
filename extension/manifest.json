@@ -23,8 +23,5 @@
     "page": "register.html",
     "open_in_tab": true
   },
-  "web_accessible_resources": [{
-    "resources": ["token.txt"],
-    "matches": ["<all_urls>"]
-  }]
+  "web_accessible_resources": []
 }

@@ -20,7 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!tab) return;
     const res = await chrome.tabs.sendMessage(tab.id, { cmd: 'getSelectedBlockIds' });
     if (res && Array.isArray(res.blockIds) && res.blockIds.length) {
-      chrome.runtime.sendMessage({ cmd: 'toggleSelection', blockIds: res.blockIds, level: 2 });
+      const level = parseInt(document.getElementById('headingLevel').value, 10);
+      chrome.runtime.sendMessage({ cmd: 'toggleSelection', blockIds: res.blockIds, level });
     }
   });
 
