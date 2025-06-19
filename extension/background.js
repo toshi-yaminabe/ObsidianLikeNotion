@@ -1,4 +1,5 @@
-const NOTION_VERSION = '2022-06-28';
+// Updated to latest Notion API version
+const NOTION_VERSION = '2025-06-19';
 
 // Load token from token.txt on first run
 (async () => {
