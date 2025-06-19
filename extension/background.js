@@ -32,18 +32,34 @@ async function buildBlockCopy(id, headers) {
   const block = await res.json();
   const copy = { object: 'block', type: block.type, [block.type]: block[block.type] };
   if (block.has_children) {
-    const childRes = await fetch(`https://api.notion.com/v1/blocks/${id}/children?page_size=100`, { headers });
-    if (childRes.ok) {
-      const childData = await childRes.json();
-      copy.children = [];
-      for (const child of childData.results) {
-        const nested = await buildBlockCopy(child.id, headers);
-        copy.children.push(nested);
-        await new Promise(r => setTimeout(r, 400));
-      }
+    const children = await fetchAllChildren(id, headers);
+    copy.children = [];
+    for (const child of children) {
+      const nested = await buildBlockCopy(child.id, headers);
+      copy.children.push(nested);
+      await new Promise(r => setTimeout(r, 400));
     }
   }
   return copy;
+}
+
+async function fetchAllChildren(id, headers) {
+  const results = [];
+  let cursor;
+  do {
+    const url =
+      `https://api.notion.com/v1/blocks/${id}/children?page_size=100` +
+      (cursor ? `&start_cursor=${cursor}` : '');
+    const res = await fetch(url, { headers });
+    if (!res.ok) throw new Error(res.statusText);
+    const data = await res.json();
+    results.push(...data.results);
+    cursor = data.next_cursor;
+    if (cursor) {
+      await new Promise(r => setTimeout(r, 400));
+    }
+  } while (cursor);
+  return results;
 }
 
 // Convert all heading blocks on a page to the same toggle heading level
@@ -55,17 +71,15 @@ async function convertToToggle(pageId, level = 2) {
     'Notion-Version': NOTION_VERSION,
     'Content-Type': 'application/json'
   };
-  // Retrieve child blocks
-  let data;
+  // Retrieve all child blocks
+  let blocks;
   try {
-    const res = await fetch(`https://api.notion.com/v1/blocks/${pageId}/children?page_size=100`, { headers });
-    if (!res.ok) throw new Error(res.statusText);
-    data = await res.json();
+    blocks = await fetchAllChildren(pageId, headers);
   } catch (e) {
     console.error('Failed to retrieve child blocks:', e);
     return;
   }
-  for (const block of data.results) {
+  for (const block of blocks) {
     if (block.type.startsWith('heading')) {
       // Archive old heading
       try {
@@ -101,16 +115,14 @@ async function convertToToggle(pageId, level = 2) {
         continue;
       }
       if (block.has_children) {
-        let childData;
+        let children;
         try {
-          const childRes = await fetch(`https://api.notion.com/v1/blocks/${block.id}/children?page_size=100`, { headers });
-          if (!childRes.ok) throw new Error(childRes.statusText);
-          childData = await childRes.json();
+          children = await fetchAllChildren(block.id, headers);
         } catch (e) {
           console.error('Failed to fetch nested blocks:', e);
           continue;
         }
-        for (const child of childData.results) {
+        for (const child of children) {
           try {
             const copy = await buildBlockCopy(child.id, headers);
             await fetch(`https://api.notion.com/v1/blocks/${createData.results[0].id}/children`, {
@@ -168,9 +180,8 @@ async function convertBlocksToToggle(blockIds, level = 2) {
     });
     const createData = await createRes.json();
     if (block.has_children) {
-      const childRes = await fetch(`https://api.notion.com/v1/blocks/${block.id}/children?page_size=100`, { headers });
-      const childData = await childRes.json();
-      for (const child of childData.results) {
+      const children = await fetchAllChildren(block.id, headers);
+      for (const child of children) {
         try {
           const copy = await buildBlockCopy(child.id, headers);
           await fetch(`https://api.notion.com/v1/blocks/${createData.results[0].id}/children`, {
