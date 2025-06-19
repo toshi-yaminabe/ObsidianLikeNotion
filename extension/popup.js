@@ -2,6 +2,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const titleInput = document.getElementById('pageTitle');
   const msg = document.getElementById('status');
 
+  chrome.runtime.onMessage.addListener(res => {
+    if (res && res.error) {
+      msg.textContent = res.error;
+      setTimeout(() => { msg.textContent = ''; }, 1500);
+    }
+  });
+
 
   document.getElementById('createNewPage').addEventListener('click', async () => {
     const title = titleInput.value.trim();
