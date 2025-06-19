@@ -1,0 +1,18 @@
+# Exclude node modules and build outputs
+node_modules/
+dist/
+build/
+
+# Logs
+*.log
+
+# OS generated files
+.DS_Store
+*.swp
+
+# Chrome extension sensitive token
+extension/token.txt
+
+# Python artifacts
+__pycache__/
+*.pyc
