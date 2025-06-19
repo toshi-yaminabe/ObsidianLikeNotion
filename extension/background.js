@@ -25,6 +25,26 @@ async function getToken() {
   return data.token || '';
 }
 
+async function buildBlockCopy(id, headers) {
+  const res = await fetch(`https://api.notion.com/v1/blocks/${id}`, { headers });
+  if (!res.ok) throw new Error(res.statusText);
+  const block = await res.json();
+  const copy = { object: 'block', type: block.type, [block.type]: block[block.type] };
+  if (block.has_children) {
+    const childRes = await fetch(`https://api.notion.com/v1/blocks/${id}/children?page_size=100`, { headers });
+    if (childRes.ok) {
+      const childData = await childRes.json();
+      copy.children = [];
+      for (const child of childData.results) {
+        const nested = await buildBlockCopy(child.id, headers);
+        copy.children.push(nested);
+        await new Promise(r => setTimeout(r, 400));
+      }
+    }
+  }
+  return copy;
+}
+
 // Convert all heading blocks on a page to the same toggle heading level
 async function convertToToggle(pageId, level = 2) {
   const token = await getToken();
@@ -91,13 +111,19 @@ async function convertToToggle(pageId, level = 2) {
         }
         for (const child of childData.results) {
           try {
+            const copy = await buildBlockCopy(child.id, headers);
+            await fetch(`https://api.notion.com/v1/blocks/${createData.results[0].id}/children`, {
+              method: 'PATCH',
+              headers,
+              body: JSON.stringify({ children: [copy] })
+            });
             await fetch(`https://api.notion.com/v1/blocks/${child.id}`, {
               method: 'PATCH',
               headers,
-              body: JSON.stringify({ parent: { block_id: createData.results[0].id } })
+              body: JSON.stringify({ archived: true })
             });
           } catch (e) {
-            console.error('Failed to move block:', e);
+            console.error('Failed to copy block:', e);
           }
           await new Promise(r => setTimeout(r, 400));
         }
@@ -144,11 +170,21 @@ async function convertBlocksToToggle(blockIds, level = 2) {
       const childRes = await fetch(`https://api.notion.com/v1/blocks/${block.id}/children?page_size=100`, { headers });
       const childData = await childRes.json();
       for (const child of childData.results) {
-        await fetch(`https://api.notion.com/v1/blocks/${child.id}`, {
-          method: 'PATCH',
-          headers,
-          body: JSON.stringify({ parent: { block_id: createData.results[0].id } })
-        });
+        try {
+          const copy = await buildBlockCopy(child.id, headers);
+          await fetch(`https://api.notion.com/v1/blocks/${createData.results[0].id}/children`, {
+            method: 'PATCH',
+            headers,
+            body: JSON.stringify({ children: [copy] })
+          });
+          await fetch(`https://api.notion.com/v1/blocks/${child.id}`, {
+            method: 'PATCH',
+            headers,
+            body: JSON.stringify({ archived: true })
+          });
+        } catch (e) {
+          console.error('Failed to copy block:', e);
+        }
         await new Promise(r => setTimeout(r, 400));
       }
     }
